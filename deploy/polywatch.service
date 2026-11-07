@@ -1,0 +1,25 @@
+# Edit User, WorkingDirectory, ExecStart and ReadWritePaths for your Pi.
+[Unit]
+Description=Polywatch trader research and web dashboard
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/polywatch
+ExecStart=/home/pi/polywatch/.venv/bin/python /home/pi/polywatch/watch.py --web --host 0.0.0.0 --port 8080
+Restart=on-failure
+RestartSec=10
+KillSignal=SIGINT
+TimeoutStopSec=30
+Environment=PYTHONUNBUFFERED=1
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/home/pi/polywatch/data
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

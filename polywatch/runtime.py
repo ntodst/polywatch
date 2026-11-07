@@ -18,7 +18,7 @@ class InstanceLock:
         except BlockingIOError:
             self.file.close()
             self.file = None
-            raise RuntimeError("A watcher is already running for this database. Use its Terminal window or quit it first.") from None
+            raise RuntimeError("A watcher is already running for this database. Use its dashboard or stop it first.") from None
         self.file.seek(0)
         self.file.truncate()
         self.file.write(str(os.getpid()))

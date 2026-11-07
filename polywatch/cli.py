@@ -35,10 +35,17 @@ def parser():
     p.add_argument("--seconds", type=positive, help="stop after this many seconds (useful for smoke tests)")
     p.add_argument("--once", action="store_true", help="fetch feeds and rankings, print a snapshot, then exit")
     p.add_argument("--json", action="store_true", help="print JSON on exit, without the live screen")
+    p.add_argument("--web", action="store_true", help="serve the web research dashboard instead of the terminal UI")
+    p.add_argument("--host", default="127.0.0.1", help="web bind address; use 0.0.0.0 for your local network")
+    p.add_argument("--port", type=int, default=8080, help="web port (default: 8080)")
     return p
 
 
 async def run(args):
+    if args.web and (args.wallet or args.once or args.json):
+        raise ValueError("--web cannot be combined with --wallet, --once or --json")
+    if not 1 <= args.port <= 65535:
+        raise ValueError("--port must be between 1 and 65535")
     if args.wallets < 2 or args.wallets > 200 or args.wallets % 2:
         raise ValueError("--wallets must be an even number from 2 to 200")
     if args.rps > 15:
@@ -75,6 +82,10 @@ async def run(args):
                 console.print(trade_table(recent, engine))
             return
         tasks = engine.tasks()
+        if args.web:
+            from .web import serve
+            await serve(engine, args.host, args.port, tasks, args.seconds)
+            return
         if not args.json and not args.once and console.is_terminal:
             from .tui import WatchApp
             app = WatchApp(engine, seconds=args.seconds)

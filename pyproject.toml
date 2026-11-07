@@ -7,7 +7,7 @@ name = "polymarket-watch"
 version = "0.2.0"
 description = "Public, real-time Polymarket whale and profitable wallet terminal monitor"
 requires-python = ">=3.11"
-dependencies = ["httpx>=0.28,<1", "rich>=14.2,<15", "textual>=8.2,<9"]
+dependencies = ["httpx>=0.28,<1", "rich>=14.2,<15", "textual>=8.2,<9", "aiohttp>=3.11,<4"]
 
 [project.optional-dependencies]
 test = ["pytest>=8,<10"]
@@ -17,6 +17,9 @@ polywatch = "polywatch.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["polywatch*"]
+
+[tool.setuptools.package-data]
+polywatch = ["web_assets/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from .models import Trade, compact_position, compact_market
+from .research import initialize, observe_profile, journal
 
 
 class Store:
@@ -40,6 +41,7 @@ class Store:
               detected_at REAL, status TEXT, raw TEXT);
             CREATE INDEX IF NOT EXISTS paper_status ON paper_signals(status, detected_at);
         """)
+        initialize(self)
 
     def close(self):
         self.db.commit()
@@ -56,6 +58,7 @@ class Store:
         return {r[0]: json.loads(r[1]) for r in self.db.execute("SELECT * FROM wallets")}
 
     def wallet(self, address, profile):
+        observe_profile(self, address, profile)
         self.db.execute("INSERT OR REPLACE INTO wallets VALUES (?, ?)", (address, json.dumps(profile)))
         self.db.commit()
 
@@ -125,10 +128,9 @@ class Store:
 
     def prune(self, retention_days=7):
         now = time.time()
-        self.db.execute("DELETE FROM trades WHERE (retained=0 AND timestamp < ?) OR timestamp < ?", (now - 900, now - retention_days * 86400))
-        self.db.execute("DELETE FROM alerts WHERE timestamp < ?", (now - retention_days * 86400,))
-        self.db.execute("DELETE FROM position_events WHERE timestamp < ?", (now - retention_days * 86400,))
-        self.db.execute("DELETE FROM paper_signals WHERE status NOT IN ('open','queued') AND detected_at < ?", (now - 30 * 86400,))
+        # Only the temporary, untracked global feed is disposable. Research
+        # records, including losses and excluded sources, survive indefinitely.
+        self.db.execute("DELETE FROM trades WHERE retained=0 AND timestamp < ?", (now - 900,))
         self.db.commit()
 
     def load_positions(self, wallet=None, min_value=None, limit=500):
@@ -148,6 +150,7 @@ class Store:
         return compact_position(json.loads(row[0])) if row else None
 
     def save_position(self, wallet, token, row):
+        journal(self, "position", wallet, token, compact_position(row))
         self.db.execute("INSERT OR REPLACE INTO position_snapshots VALUES (?, ?, ?)", (wallet, token, json.dumps(compact_position(row), separators=(",", ":"))))
 
     def load_checks(self, table):
@@ -158,6 +161,8 @@ class Store:
     def save_check(self, table, key, value):
         if table not in ("position_checks", "market_checks"):
             raise ValueError("Unknown check table")
+        if table == "market_checks":
+            journal(self, "market", "", key, compact_market(value))
         self.db.execute(f"INSERT OR REPLACE INTO {table} VALUES (?, ?)", (key, json.dumps(value)))
 
     def position_event(self, kind, row, previous_size, now):

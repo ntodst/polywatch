@@ -1,6 +1,21 @@
 # Polymarket Watch
 
-A Python terminal watcher centered on **meaningful positions that wallets still hold in tradable markets**. Covers all prediction-market categories, $10,000 big trades, and equal discovery of whales and historically profitable accounts. Uses public, read-only APIs; no credentials or wallet connection. Existing environment files are not read.
+A Python watcher and Raspberry Pi web research dashboard centered on **meaningful positions that wallets still hold in tradable markets**. Covers all prediction-market categories, $10,000 big trades, and equal discovery of whales and historically profitable accounts. Uses public, read-only APIs; no credentials or wallet connection. Existing environment files are not read.
+
+## Web research dashboard
+
+```sh
+.venv/bin/python -m pip install -e .
+.venv/bin/python watch.py --web --host 0.0.0.0 --port 8080
+```
+
+Open `http://<raspberry-pi-ip>:8080` on your local network. Without `--host`, the web interface binds to `127.0.0.1`. No Node.js or frontend build is needed. Terminal mode remains available by omitting `--web`; run only one mode per database.
+
+The responsive interface includes **Top traders**, **Market radar**, **Activity log**, **Paper lab**, **Research archive**, and **System**. Save a persistent shortlist, manually add public wallets, inspect individual trader evidence, change future paper budgets, and export complete research datasets. Freshness, unknown values, insufficient evidence, skipped signals, and excluded sources are explicit.
+
+The long-term screen requires 90 days of locally observed PnL, 60 covered daily comparisons, at least 30 active days with 60% positive, positive observed net PnL, fresh nonnegative account verification, recent passing historical analysis, and 20 fully priced profitable-in-aggregate simulated closes spanning 30 days. Each requirement is shown separately. Imported API history cannot substitute for locally observed evidence. No live copy orders are submitted.
+
+Research records now persist indefinitely. [Raspberry Pi setup, boot service, retention details, and backup instructions](deploy/README.md) explain the deployment and methodology. Browser assets are packaged with the Python application.
 
 ## Run
 
@@ -62,7 +77,7 @@ Paper tracking is read-only and enabled for newly detected qualifying BUY alerts
 
 Open simulations are marked using executable bid depth after estimated exit fees; insufficient exit depth leaves the full position unpriced. The record retains the first available post-horizon observations at 5m, 1h, 6h and 24h, plus worst/best observed mark PnL. These observations are not continuous intraperiod extrema. Simulations exit on a confirmed source exit, source disqualification or 24h, using a quote fetched after the exit decision. A confirmed resolved token payout can close a simulation as a simulated redemption. An elapsed market end date alone never creates a settlement payout.
 
-There are at most 25 new open paper positions and 125 active/queued records. Simulations survive restarts. Completed/skipped paper records are retained for thirty days. Paper history includes results from subsequently disqualified sources to avoid hiding losing signals; those accounts receive no further dedicated wallet polling. The paper panel summarizes the latest 100 records, not an all-time audited trading return. Estimated fees, snapshot liquidity and polling latency cannot reproduce exchange queue priority or future market impact.
+There are at most 25 new open paper positions and 125 active/queued records. Simulations survive restarts. Completed/skipped paper records are retained permanently. Paper history includes results from subsequently disqualified sources to avoid hiding losing signals; those accounts receive no further dedicated wallet polling. The paper panel summarizes the latest 100 records, not an all-time audited trading return. Estimated fees, snapshot liquidity and polling latency cannot reproduce exchange queue priority or future market impact.
 
 ## Scanning and freshness
 
@@ -123,7 +138,7 @@ Closed-book history is capped at ten pages of 1,000 rows. Partial closed books c
 - **BIG BET:** individual wallet fill worth at least $10,000 (`shares × execution price`). Buys and sells qualify.
 - **ACCUMULATION:** at least two observed buys by the same wallet in the same outcome totaling at least $10,000 over five minutes. Repeats suppressed for five minutes. This may overlap a big-bet alert.
 
-SQLite at `data/polywatch.sqlite3` stores watermarks, profiles, alerts, trades, latest position snapshots, verification metadata, and position-change history. Existing databases are extended automatically without deleting history. Big/tracked-wallet trades, alerts, and meaningful position changes are retained for seven days. Other raw trade observations are retained for 15 minutes for aggregation. Latest position snapshots and metadata persist across restarts, with freshness filters still applied. Cleanup runs with health checks. Trade amounts are gross fill notional, not fee-adjusted spending. Shared-market trades are not summed into a platform volume total.
+SQLite at `data/polywatch.sqlite3` stores watermarks, profiles, alerts, trades, latest position snapshots, verification metadata, and position-change history, plus local account-PnL observations, imported historical PnL, and a research journal. Existing databases are extended automatically without deleting history. Big/tracked-wallet trades, alerts, meaningful position changes, and paper records are retained permanently. Other raw trade observations are retained for 15 minutes for aggregation. Position, profile, and market economic-state changes are journaled, with one unchanged daily baseline; imported closed positions are journaled on change. Latest snapshots and metadata persist across restarts, with freshness filters still applied. Previously deleted history cannot be recovered. Cleanup runs with health checks. Trade amounts are gross fill notional, not fee-adjusted spending. Shared-market trades are not summed into a platform volume total.
 
 Trade identity includes transaction hash, wallet, outcome token, side, size, price, and timestamp. The API doesn't expose a fill/log index: byte-identical economic fills in the same transaction may be indistinguishable and collapse. Wallet addresses are identities for this tool; it does not claim to identify people or link accounts belonging to one person. The global prediction-market trade feed is scanned; dedicated combo RFQ feeds and perpetuals are not separately monitored. Combo structural condition IDs observed in the global trade feed are excluded from standard position-query batches; their trade history may appear, but their holdings remain unverified and are never presented as active standard-market positions.
 

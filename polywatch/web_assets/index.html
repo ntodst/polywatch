@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#131e22"><meta name="description" content="A local Polymarket research workspace for discovering consistent traders through lasting evidence.">
+  <title>Polywatch · Trader research</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/assets/style.css"><script src="/assets/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to research</a>
+<aside class="sidebar">
+  <a class="brand" href="#traders"><span class="brand-icon">p<span>↗</span></span><span>polywatch<span class="brand-dot">.</span></span></a>
+  <div class="workspace-label">YOUR RESEARCH WORKSPACE</div>
+  <nav aria-label="Main navigation">
+    <button data-page="traders" class="nav-item active"><span data-icon="users"></span>Top traders<span class="nav-count" id="nav-count">—</span></button>
+    <button data-page="markets" class="nav-item"><span data-icon="radar"></span>Market radar</button>
+    <button data-page="activity" class="nav-item"><span data-icon="activity"></span>Activity log</button>
+    <div class="nav-divider"></div>
+    <button data-page="paper" class="nav-item"><span data-icon="flask"></span>Paper lab<span class="small-tag">SIM</span></button>
+    <button data-page="archive" class="nav-item"><span data-icon="archive"></span>Research archive</button>
+    <button data-page="system" class="nav-item"><span data-icon="settings"></span>System</button>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="research-note"><span data-icon="layers"></span><strong>Play the long game.</strong><p>Track the process.<br>Let the evidence build.</p></div>
+    <div class="node"><span class="node-icon" data-icon="server"></span><div><strong>Local research node</strong><span id="node-state">Connecting to scanner</span></div><span id="node-dot" class="dot amber"></span></div>
+  </div>
+</aside>
+<div class="shell">
+  <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong id="crumb">Top traders</strong></div><div class="top-actions"><span id="connection" class="connection"><i class="dot amber"></i>Connecting</span><span class="top-separator"></span><span id="today"></span><button id="refresh" class="icon-button" aria-label="Refresh dashboard" title="Refresh dashboard"><span data-icon="refresh"></span></button></div></header>
+  <div id="connection-error" class="connection-error" role="status" hidden></div>
+  <main id="content" tabindex="-1"><div class="loading-state"><div class="loader"></div><h1>Opening your workspace</h1><p>Loading research from your local node…</p></div></main>
+  <footer><span><i class="dot"></i> Public data. Local evidence.</span><span>Research screens are not predictions of future returns.</span></footer>
+</div>
+<dialog id="detail" aria-labelledby="detail-title"><div id="detail-content"></div></dialog>
+<dialog id="methodology" aria-labelledby="method-title">
+  <div class="dialog-header"><div><div class="eyebrow">THE RESEARCH METHOD</div><h2 id="method-title">Consistency needs time.</h2></div><button class="icon-button" data-close="methodology" aria-label="Close methodology">✕</button></div>
+  <div class="dialog-body"><p class="intro">The long-term screen requires every condition below. An unmet condition stays visible, so a large lifetime profit never substitutes for evidence.</p><ol class="method-list"><li><strong>Fresh account verification</strong><p>Overall realized plus unrealized position PnL is nonnegative. Stale or incomplete accounts remain pending; persistently disqualified sources stay in the audit archive.</p></li><li><strong>90 days observed locally</strong><p>At least 60 covered daily comparisons, positive net observed PnL, at least 30 active days, and at least 60% of those days positive. Missing days are not filled or counted as zero.</p></li><li><strong>Historical consistency</strong><p>Complete fetched closed history covering at least 30 markets; positive all-time realized and monthly marked PnL; 10 active daily samples, 60% positive; covered open PnL and positive realized plus open PnL. Analysis must be refreshed within one hour.</p></li><li><strong>Prospective copy evidence</strong><p>At least 20 fully priced simulated closes spanning 30 days, with positive total net PnL after estimated fees. Skips, open positions, and losing or excluded sources remain recorded.</p></li></ol><div class="notice">Drawdown is the peak-to-trough dollar decline across daily account PnL samples. It may miss intraday losses. Returns are not expressed as ROI because invested capital is not known.</div><p class="muted">Ranks cover discovered and manually shortlisted wallets. They are not a ranking of every Polymarket account. Simulations currently follow qualifying BUY alerts and exit on source exit, disqualification, or a 24-hour horizon; they do not replicate every source strategy.</p></div>
+</dialog>
+<div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

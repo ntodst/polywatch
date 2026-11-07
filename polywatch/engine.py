@@ -7,6 +7,7 @@ from .positions import Positions
 from .runtime import preferences
 from .execution import Execution
 from .paper import Paper
+from .research import Research
 
 
 @dataclass
@@ -41,6 +42,7 @@ class Engine:
             self.preferences["min_value"] = threshold
         self.execution = Execution(self)
         self.paper = Paper(self)
+        self.research = Research(self)
 
     def allowed(self, wallet):
         return account_status(self.wallets.get(wallet.lower(), {})) == "eligible"
@@ -117,6 +119,7 @@ class Engine:
 
     def note(self, message):
         self.notices = (self.notices + [message])[-5:]
+        self.research.notice(message)
 
     def enqueue(self, wallet):
         if self.excluded(wallet):
@@ -220,7 +223,7 @@ class Engine:
                         seen.add(row["user_id"])
                         profit.append(row)
                 for p in self.wallets.values():
-                    p["cohorts"] = [c for c in p.get("cohorts", []) if c == "observed whale"]
+                    p["cohorts"] = [c for c in p.get("cohorts", []) if c in ("observed whale", "watchlist")]
                 # Show available board economics immediately while deeper
                 # position analysis loads for accounts with thousands of rows.
                 for field, board in (("all_pnl", boards[0]), ("month_pnl", boards[1])):
@@ -263,6 +266,7 @@ class Engine:
             self.api.pages("/v2/positions", user=wallet, status="CLOSED", limit=1000, max_pages=10),
         )
         all_board, month_board, value, pnl, closed = results
+        self.research.save_closed(wallet, closed[0])
         for field, board in (("all_pnl", all_board), ("month_pnl", month_board)):
             row = board["data"]
             p[field] = number(row.get("pnl")) if row else None
@@ -270,6 +274,7 @@ class Engine:
                 p["name"] = row.get("user_name") or p.get("name") or wallet[:12]
         p["portfolio"] = number((value["data"] or {}).get("value"))
         points = (pnl["data"] or {}).get("points", [])
+        self.research.save_history(wallet, points)
         # Only consecutive, covered daily samples; cashflow-net position PnL
         # avoids deposits being counted as profitable trading days.
         changes = [b["position_pnl"] - a["position_pnl"] for a, b in zip(points, points[1:])
